@@ -28,3 +28,5 @@ stamp-h1
 .deps/
 .libs/
 .dirstamp
+unison-fsmonitor-macos-*.tar.gz
+unison-fsmonitor-macos-*.tar.xz

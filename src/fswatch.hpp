@@ -31,9 +31,9 @@ namespace fm {
     public:
       FSWatch(FSWatch &&watch) : _monitor{std::move(watch._monitor)},
                                  _manager{watch._manager},
+                                 _thread{std::move(watch._thread)},
                                  _replica{watch._replica},
-                                 _context{watch._context},
-                                 _thread{std::move(watch._thread)} {
+                                 _context{watch._context} {
         watch._context = nullptr;
       }
 
