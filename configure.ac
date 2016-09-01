@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([unison-macos-fsmonitor], [0.0.1], [caleb@land.fm], [unison-macos-fsmonitor])
+AC_INIT([unison-fsmonitor-macos], [0.0.1], [caleb@land.fm], [unison-fsmonitor-macos])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([dist-xz subdir-objects foreign])
 AC_CONFIG_MACRO_DIRS([m4])
@@ -23,7 +23,7 @@ AX_BOOST_BASE
 AX_BOOST_FILESYSTEM
 
 AC_LANG_PUSH([C++])
-AC_CHECK_HEADER([libfswatch/c++/monitor.hpp], [], AC_MSG_ERROR([unable to find json.hpp]))
+AC_CHECK_HEADER([libfswatch/c++/monitor.hpp], [], AC_MSG_ERROR([unable to find libfswatch/c++/monitor.hpp]))
 AC_LANG_POP([C++])
 
 PKG_CHECK_MODULES([GLIB], [glib-2.0])
