@@ -467,7 +467,6 @@ namespace fm {
 
           template <typename Ret, typename Arg>
           struct wise<Ret(Arg)> {
-
             template <typename T, typename E, typename Func>
             static result<T, E> otherwise(const result<T, E> &result, Func func) {
               static_assert(
