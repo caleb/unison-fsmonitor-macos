@@ -181,7 +181,6 @@ namespace fm {
           // Specialization for callback returning void on a void Result
           template <>
           struct Map<void(void)> {
-
             template <typename T, typename E, typename Func>
             static Result<void, E> map(const Result<T, E> &result, Func func) {
               static_assert(std::is_same<T, void>::value,
@@ -199,7 +198,6 @@ namespace fm {
           // General specialization for a callback returning a Result
           template <typename U, typename E, typename Arg>
           struct Map<Result<U, E>(Arg)> {
-
             template <typename T, typename Func>
             static Result<U, E> map(const Result<T, E> &result, Func func) {
               static_assert(
@@ -219,7 +217,6 @@ namespace fm {
           // Specialization for a void callback returning a Result
           template <typename U, typename E>
           struct Map<Result<U, E>(void)> {
-
             template <typename T, typename Func>
             static Result<U, E> map(const Result<T, E> &result, Func func) {
               static_assert(std::is_same<T, void>::value, "Can not call a void-callback on a non-void Result");
@@ -253,7 +250,6 @@ namespace fm {
       } // namespace ok
 
       namespace err {
-
         namespace impl {
 
           template <typename T>
@@ -290,13 +286,10 @@ namespace fm {
 
         template <typename Func>
         struct Map : public impl::Map<decltype(&Func::operator())> {};
-
       } // namespace err;
 
       namespace And {
-
         namespace impl {
-
           template <typename Func>
           struct Then;
 
@@ -357,9 +350,7 @@ namespace fm {
       } // namespace And
 
       namespace Or {
-
         namespace impl {
-
           template <typename Func>
           struct Else;
 
