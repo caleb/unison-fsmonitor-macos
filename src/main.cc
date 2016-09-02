@@ -1,8 +1,4 @@
-#include <chrono>
 #include <iostream>
-#include <thread>
-#include <unistd.h>
-
 #include "fswatchmanager.hpp"
 #include "manager.hpp"
 #include "unisonmanager.hpp"
