@@ -125,17 +125,17 @@ namespace fm {
       }
 
       bool has_replica(const string &hash) {
-        return this->replica(hash).isOk();
+        return this->replica(hash).is_ok();
       }
 
-      Result<std::reference_wrapper<const Replica>> replica(const string &hash) {
+      result<std::reference_wrapper<const Replica>> replica(const string &hash) {
         for (const auto &replica : this->_replicas) {
           if (replica.hash == hash) {
-            return Ok(std::cref(replica));
+            return ok(std::cref(replica));
           }
         }
 
-        return Err("No replica found with hash " + hash);
+        return err("No replica found with hash " + hash);
       }
 
       void trigger_change(const Replica &replica) {

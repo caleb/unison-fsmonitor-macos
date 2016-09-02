@@ -18,21 +18,21 @@ namespace fm {
       int _fd;
       std::string _sockname;
 
-      Result<std::string> find_socket() {
+      result<std::string> find_socket() {
         pid_t pid;
         int pipefd[2];
         int meta_pipe[2];
 
         if (pipe(pipefd) < 0) {
-          return Err("Could not create pipe");
+          return err("Could not create pipe");
         }
         if (pipe(meta_pipe) < 0) {
-          return Err("Could not create pipe");
+          return err("Could not create pipe");
         }
 
         pid = fork();
         if (pid < 0) {
-          return Err("Could not fork");
+          return err("Could not fork");
         } else if (pid == 0) {
           // Child process
           close(pipefd[0]);
@@ -98,9 +98,9 @@ namespace fm {
           errors = errorstream.str();
 
           if (errors.length() > 0) {
-            return Err(std::move(errors));
+            return err(std::move(errors));
           } else {
-            return Ok(result.str());
+            return ok(result.str());
           }
         }
       }
@@ -109,7 +109,7 @@ namespace fm {
       Watchman() {
       }
 
-      Result<void> connect() {
+      result<void> connect() {
         using json = nlohmann::json;
 
         auto result = this->find_socket();
@@ -119,11 +119,11 @@ namespace fm {
         std::string sockname;
 
         if (j.find("sockname") == j.end()) {
-          return Err("Error parsing watchman output: \n\n" + result.ok() + "\nCould not find key \"sockname\"");
+          return err("Error parsing watchman output: \n\n" + result.ok() + "\nCould not find key \"sockname\"");
         }
 
         if (! j["sockname"].is_string()) {
-          return Err("sockname isn't string: \n\n" + result.ok());
+          return err("sockname isn't string: \n\n" + result.ok());
         }
 
         this->_sockname = j["sockname"];
@@ -133,9 +133,9 @@ namespace fm {
 
         this->_fd = socket.ok();
 
-        return Ok();
+        return ok();
       }
-      Result<std::string> watch_project(std::string path) {
+      result<std::string> watch_project(std::string path) {
         using json = nlohmann::json;
         json req = {"watch-project", path};
         std::string sreq(req.dump());
@@ -145,20 +145,20 @@ namespace fm {
 
         auto send_res = send(this->_fd, sreq.c_str());
         if (! send_res) {
-          return Err("Could not receive response from watchman");
+          return err("Could not receive response from watchman");
         }
 
         auto res = recv(this->_fd);
 
         if (! res) {
-          return Err("Could not receive response from watchman");
+          return err("Could not receive response from watchman");
         }
 
         json json_res = res.ok();
 
         std::cout << "Got response " << json_res.dump() << std::endl;
 
-        return Ok(std::string("Hello world"));
+        return ok(std::string("Hello world"));
       }
     };
   }

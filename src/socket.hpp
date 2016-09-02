@@ -16,7 +16,7 @@ namespace fm {
     using json = nlohmann::json;
     namespace io = boost::iostreams;
 
-    Result<int> connect_to_socket(std::string path) {
+    result<int> connect_to_socket(std::string path) {
       sockaddr_un sa;
       memset(&sa, 0, sizeof(sa));
       sa.sun_family = AF_UNIX;
@@ -24,17 +24,17 @@ namespace fm {
 
       int fd = socket(AF_UNIX, SOCK_STREAM, 0);
       if (fd < 0) {
-        return Err("Error creating socket");
+        return err("Error creating socket");
       }
 
       if (connect(fd, (sockaddr *) &sa, sizeof(sa)) < 0) {
-        return Err("Error creating socket");
+        return err("Error creating socket");
       }
 
-      return Ok(fd);
+      return ok(fd);
     }
 
-    Result<size_t> send(int fd, const char* req) {
+    result<size_t> send(int fd, const char* req) {
       size_t s = strlen(req);
       size_t written = 0;
 
@@ -43,10 +43,10 @@ namespace fm {
         if (written == s) { break; }
       }
 
-      return Ok(written);
+      return ok(written);
     }
 
-    Result<std::string> recv(int fd) {
+    result<std::string> recv(int fd) {
       io::file_descriptor_source src(fd, io::never_close_handle);
       io::stream_buffer<io::file_descriptor_source> fpstream(src);
       std::istream in(&fpstream);
@@ -62,10 +62,10 @@ namespace fm {
       }
 
       if (in.fail() || in.eof()) {
-        return Err("Failed to extract response from watchman");
+        return err("Failed to extract response from watchman");
       }
 
-      return Ok(sstream.str());
+      return ok(sstream.str());
     }
   }
 }
