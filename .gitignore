@@ -30,3 +30,4 @@ stamp-h1
 .dirstamp
 unison-fsmonitor-macos-*.tar.gz
 unison-fsmonitor-macos-*.tar.xz
+src/unison-fsmonitor
