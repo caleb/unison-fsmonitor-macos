@@ -12,6 +12,7 @@ pkg_check_modules(PC_GLIB2 REQUIRED glib-2.0)
 foreach(_library ${PC_GLIB2_LIBRARIES})
   find_library(${_library}_LIBRARIES NAMES ${_library} "lib${_library}" HINTS ${PC_GLIB2_LIBRARY_DIRS})
   list(APPEND GLIB2_LIBRARIES ${${_library}_LIBRARIES})
+  unset(${_library}_LIBRARIES CACHE)
 endforeach()
 set(GLIB2_INCLUDE_DIRS ${PC_GLIB2_INCLUDE_DIRS})
 
