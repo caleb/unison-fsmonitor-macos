@@ -18,7 +18,7 @@
 #include "directory.hpp"
 #include "plf_colony.h"
 #include "group_by.hpp"
-#include "utility.hpp"
+#include "result.hpp"
 
 using std::queue;
 using std::map;

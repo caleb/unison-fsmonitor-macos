@@ -12,7 +12,7 @@ unison_fsmonitor_SOURCES=main.cc \
                          group_by.hpp \
                          manager.hpp \
                          unisonmanager.hpp \
-                         utility.hpp \
+                         result.hpp \
                          plf_colony.h \
                          plf_stack.h \
                          watchman.hpp

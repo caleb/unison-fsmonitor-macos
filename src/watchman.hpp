@@ -1,7 +1,7 @@
 #pragma once
 
 #include "json.hpp"
-#include "utility.hpp"
+#include "result.hpp"
 #include "socket.hpp"
 #include "watchman.hpp"
 

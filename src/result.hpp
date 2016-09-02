@@ -8,30 +8,33 @@
 namespace fm {
   namespace land {
     /*
-    Mathieu Stefani, 03 mai 2016
+        Mathieu Stefani, 03 mai 2016
 
-    This header provides a Result type that can be used to replace exceptions in code
-    that has to handle error.
+        This header provides a Result type that can be used to replace exceptions in code
+        that has to handle error.
 
-    Result<T, E> can be used to return and propagate an error to the caller. Result<T, E> is an algebraic
-    data type that can either Ok(T) to represent success or Err(E) to represent an error.
-    */
+        Result<T, E> can be used to return and propagate an error to the caller. Result<T, E> is an algebraic
+        data type that can either Ok(T) to represent success or Err(E) to represent an error.
+        */
 
     namespace types {
       template <typename T>
       struct Ok {
         Ok(const T &val) : val(val) {}
+
         Ok(T &&val) : val(std::move(val)) {}
 
         T val;
       };
 
       template <>
-      struct Ok<void> {};
+      struct Ok<void> {
+      };
 
       template <typename E>
       struct Err {
         Err(const E &val) : val(val) {}
+
         Err(E &&val) : val(std::move(val)) {}
 
         E val;
@@ -56,16 +59,18 @@ namespace fm {
     struct Result;
 
     namespace details {
-
       template <typename...>
-      struct void_t { typedef void type; };
+      struct void_t {
+        typedef void type;
+      };
 
       namespace impl {
         template <typename Func>
         struct result_of;
 
         template <typename Ret, typename Cls, typename... Args>
-        struct result_of<Ret (Cls::*)(Args...)> : public result_of<Ret(Args...)> {};
+        struct result_of<Ret (Cls::*)(Args...)> : public result_of<Ret(Args...)> {
+        };
 
         template <typename Ret, typename... Args>
         struct result_of<Ret(Args...)> {
@@ -74,7 +79,8 @@ namespace fm {
       }
 
       template <typename Func>
-      struct result_of : public impl::result_of<decltype(&Func::operator())> {};
+      struct result_of : public impl::result_of<decltype(&Func::operator())> {
+      };
 
       template <typename Ret, typename Cls, typename... Args>
       struct result_of<Ret (Cls::*)(Args...) const> {
@@ -87,7 +93,9 @@ namespace fm {
       };
 
       template <typename R>
-      struct ResultOkType { typedef typename std::decay<R>::type type; };
+      struct ResultOkType {
+        typedef typename std::decay<R>::type type;
+      };
 
       template <typename T, typename E>
       struct ResultOkType<Result<T, E>> {
@@ -95,7 +103,9 @@ namespace fm {
       };
 
       template <typename R>
-      struct ResultErrType { typedef R type; };
+      struct ResultErrType {
+        typedef R type;
+      };
 
       template <typename T, typename E>
       struct ResultErrType<Result<T, E>> {
@@ -103,22 +113,24 @@ namespace fm {
       };
 
       template <typename R>
-      struct IsResult : public std::false_type {};
+      struct IsResult : public std::false_type {
+      };
       template <typename T, typename E>
-      struct IsResult<Result<T, E>> : public std::true_type {};
+      struct IsResult<Result<T, E>> : public std::true_type {
+      };
 
       namespace ok {
-
         namespace impl {
-
           template <typename T>
           struct Map;
 
           template <typename Ret, typename Cls, typename Arg>
-          struct Map<Ret (Cls::*)(Arg) const> : public Map<Ret(Arg)> {};
+          struct Map<Ret (Cls::*)(Arg) const> : public Map<Ret(Arg)> {
+          };
 
           template <typename Ret, typename Cls, typename Arg>
-          struct Map<Ret (Cls::*)(Arg)> : public Map<Ret(Arg)> {};
+          struct Map<Ret (Cls::*)(Arg)> : public Map<Ret(Arg)> {
+          };
 
           // General implementation
           template <typename Ret, typename Arg>
@@ -219,7 +231,8 @@ namespace fm {
           struct Map<Result<U, E>(void)> {
             template <typename T, typename Func>
             static Result<U, E> map(const Result<T, E> &result, Func func) {
-              static_assert(std::is_same<T, void>::value, "Can not call a void-callback on a non-void Result");
+              static_assert(std::is_same<T, void>::value,
+                            "Can not call a void-callback on a non-void Result");
 
               if (result.isOk()) {
                 auto res = func();
@@ -229,29 +242,32 @@ namespace fm {
               return types::Err<E>(result.storage().template get<E>());
             }
           };
-
         } // namespace impl
 
         template <typename Func>
-        struct Map : public impl::Map<decltype(&Func::operator())> {};
+        struct Map : public impl::Map<decltype(&Func::operator())> {
+        };
 
         template <typename Ret, typename... Args>
-        struct Map<Ret (*)(Args...)> : public impl::Map<Ret(Args...)> {};
+        struct Map<Ret (*)(Args...)> : public impl::Map<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Map<Ret (Cls::*)(Args...)> : public impl::Map<Ret(Args...)> {};
+        struct Map<Ret (Cls::*)(Args...)> : public impl::Map<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Map<Ret (Cls::*)(Args...) const> : public impl::Map<Ret(Args...)> {};
+        struct Map<Ret (Cls::*)(Args...) const> : public impl::Map<Ret(Args...)> {
+        };
 
         template <typename Ret, typename... Args>
-        struct Map<std::function<Ret(Args...)>> : public impl::Map<Ret(Args...)> {};
+        struct Map<std::function<Ret(Args...)>> : public impl::Map<Ret(Args...)> {
+        };
 
       } // namespace ok
 
       namespace err {
         namespace impl {
-
           template <typename T>
           struct Map;
 
@@ -281,11 +297,11 @@ namespace fm {
               return types::Ok<void>();
             }
           };
-
         } // namespace impl
 
         template <typename Func>
-        struct Map : public impl::Map<decltype(&Func::operator())> {};
+        struct Map : public impl::Map<decltype(&Func::operator())> {
+        };
       } // namespace err;
 
       namespace And {
@@ -294,13 +310,16 @@ namespace fm {
           struct Then;
 
           template <typename Ret, typename... Args>
-          struct Then<Ret (*)(Args...)> : public Then<Ret(Args...)> {};
+          struct Then<Ret (*)(Args...)> : public Then<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Then<Ret (Cls::*)(Args...)> : public Then<Ret(Args...)> {};
+          struct Then<Ret (Cls::*)(Args...)> : public Then<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Then<Ret (Cls::*)(Args...) const> : public Then<Ret(Args...)> {};
+          struct Then<Ret (Cls::*)(Args...) const> : public Then<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Arg>
           struct Then<Ret(Arg)> {
@@ -323,7 +342,8 @@ namespace fm {
 
             template <typename T, typename E, typename Func>
             static Result<T, E> then(const Result<T, E> &result, Func func) {
-              static_assert(std::is_same<T, void>::value, "Can not call a void-callback on a non-void Result");
+              static_assert(std::is_same<T, void>::value,
+                            "Can not call a void-callback on a non-void Result");
 
               if (result.isOk()) {
                 func();
@@ -336,17 +356,20 @@ namespace fm {
         } // namespace impl
 
         template <typename Func>
-        struct Then : public impl::Then<decltype(&Func::operator())> {};
+        struct Then : public impl::Then<decltype(&Func::operator())> {
+        };
 
         template <typename Ret, typename... Args>
-        struct Then<Ret (*)(Args...)> : public impl::Then<Ret(Args...)> {};
+        struct Then<Ret (*)(Args...)> : public impl::Then<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Then<Ret (Cls::*)(Args...)> : public impl::Then<Ret(Args...)> {};
+        struct Then<Ret (Cls::*)(Args...)> : public impl::Then<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Then<Ret (Cls::*)(Args...) const> : public impl::Then<Ret(Args...)> {};
-
+        struct Then<Ret (Cls::*)(Args...) const> : public impl::Then<Ret(Args...)> {
+        };
       } // namespace And
 
       namespace Or {
@@ -355,13 +378,16 @@ namespace fm {
           struct Else;
 
           template <typename Ret, typename... Args>
-          struct Else<Ret (*)(Args...)> : public Else<Ret(Args...)> {};
+          struct Else<Ret (*)(Args...)> : public Else<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Else<Ret (Cls::*)(Args...)> : public Else<Ret(Args...)> {};
+          struct Else<Ret (Cls::*)(Args...)> : public Else<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Else<Ret (Cls::*)(Args...) const> : public Else<Ret(Args...)> {};
+          struct Else<Ret (Cls::*)(Args...) const> : public Else<Ret(Args...)> {
+          };
 
           template <typename T, typename F, typename Arg>
           struct Else<Result<T, F>(Arg)> {
@@ -418,38 +444,42 @@ namespace fm {
               return types::Ok<void>();
             }
           };
-
         } // namespace impl
 
         template <typename Func>
-        struct Else : public impl::Else<decltype(&Func::operator())> {};
+        struct Else : public impl::Else<decltype(&Func::operator())> {
+        };
 
         template <typename Ret, typename... Args>
-        struct Else<Ret (*)(Args...)> : public impl::Else<Ret(Args...)> {};
+        struct Else<Ret (*)(Args...)> : public impl::Else<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Else<Ret (Cls::*)(Args...)> : public impl::Else<Ret(Args...)> {};
+        struct Else<Ret (Cls::*)(Args...)> : public impl::Else<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Else<Ret (Cls::*)(Args...) const> : public impl::Else<Ret(Args...)> {};
+        struct Else<Ret (Cls::*)(Args...) const> : public impl::Else<Ret(Args...)> {
+        };
 
       } // namespace Or
 
       namespace Other {
-
         namespace impl {
-
           template <typename Func>
           struct Wise;
 
           template <typename Ret, typename... Args>
-          struct Wise<Ret (*)(Args...)> : public Wise<Ret(Args...)> {};
+          struct Wise<Ret (*)(Args...)> : public Wise<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Wise<Ret (Cls::*)(Args...)> : public Wise<Ret(Args...)> {};
+          struct Wise<Ret (Cls::*)(Args...)> : public Wise<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Cls, typename... Args>
-          struct Wise<Ret (Cls::*)(Args...) const> : public Wise<Ret(Args...)> {};
+          struct Wise<Ret (Cls::*)(Args...) const> : public Wise<Ret(Args...)> {
+          };
 
           template <typename Ret, typename Arg>
           struct Wise<Ret(Arg)> {
@@ -474,16 +504,20 @@ namespace fm {
         } // namespace impl
 
         template <typename Func>
-        struct Wise : public impl::Wise<decltype(&Func::operator())> {};
+        struct Wise : public impl::Wise<decltype(&Func::operator())> {
+        };
 
         template <typename Ret, typename... Args>
-        struct Wise<Ret (*)(Args...)> : public impl::Wise<Ret(Args...)> {};
+        struct Wise<Ret (*)(Args...)> : public impl::Wise<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Wise<Ret (Cls::*)(Args...)> : public impl::Wise<Ret(Args...)> {};
+        struct Wise<Ret (Cls::*)(Args...)> : public impl::Wise<Ret(Args...)> {
+        };
 
         template <typename Ret, typename Cls, typename... Args>
-        struct Wise<Ret (Cls::*)(Args...) const> : public impl::Wise<Ret(Args...)> {};
+        struct Wise<Ret (Cls::*)(Args...) const> : public impl::Wise<Ret(Args...)> {
+        };
 
       } // namespace Other
 
@@ -525,8 +559,10 @@ namespace fm {
         return Or::Else<Func>::orElse(result, func);
       }
 
-      struct ok_tag {};
-      struct err_tag {};
+      struct ok_tag {
+      };
+      struct err_tag {
+      };
 
       template <typename T, typename E>
       struct Storage {
@@ -537,12 +573,23 @@ namespace fm {
 
         Storage() : initialized_(false) {}
 
-        void construct(types::Ok<T> ok) {
+        void construct(types::Ok<T> &ok) {
           new (&storage_) T(ok.val);
           initialized_ = true;
         }
-        void construct(types::Err<E> err) {
+
+        void construct(types::Ok<T> &&ok) {
+          new (&storage_) T(std::move(ok.val));
+          initialized_ = true;
+        }
+
+        void construct(types::Err<E> &err) {
           new (&storage_) E(err.val);
+          initialized_ = true;
+        }
+
+        void construct(types::Err<E> &&err) {
+          new (&storage_) E(std::move(err.val));
           initialized_ = true;
         }
 
@@ -590,8 +637,13 @@ namespace fm {
           initialized_ = true;
         }
 
-        void construct(types::Err<E> err) {
+        void construct(types::Err<E> &err) {
           new (&storage_) E(err.val);
+          initialized_ = true;
+        }
+
+        void construct(types::Err<E> &&err) {
+          new (&storage_) E(std::move(err.val));
           initialized_ = true;
         }
 
@@ -604,6 +656,7 @@ namespace fm {
         }
 
         void destroy(ok_tag) { initialized_ = false; }
+
         void destroy(err_tag) {
           if (initialized_) {
             get<E>().~E();
@@ -627,7 +680,6 @@ namespace fm {
 
       template <typename T, typename E>
       struct Constructor {
-
         static void move(Storage<T, E> &&src, Storage<T, E> &dst, ok_tag) {
           dst.rawConstruct(std::move(src.template get<T>()));
           src.destroy(ok_tag());
@@ -666,37 +718,41 @@ namespace fm {
           dst.rawConstruct(src.template get<E>());
         }
       };
-
     } // namespace details
 
     namespace concept {
-
       template <typename T, typename = void>
-      struct EqualityComparable : std::false_type {};
+      struct EqualityComparable : std::false_type {
+      };
 
       template <typename T>
       struct EqualityComparable<T,
                                 typename std::enable_if<
                                     true,
-                                    typename details::void_t<decltype(std::declval<T>() == std::declval<T>())>::type>::type> : std::true_type {
+                                    typename details::void_t<decltype(std::declval<T>() == std::declval<T>())>::type>::type>
+          : std::true_type {
       };
-
     } // namespace concept
 
     template <typename T, typename E = std::string>
     struct Result {
-
       static_assert(!std::is_same<E, void>::value, "void error type is not allowed");
 
       typedef details::Storage<T, E> storage_type;
 
-      Result(types::Ok<T> ok)
-          : ok_(true) {
+      Result(types::Ok<T> &ok) : ok_(true) {
+        storage_.construct(ok);
+      }
+
+      Result(types::Ok<T> &&ok) : ok_(true) {
         storage_.construct(std::move(ok));
       }
 
-      Result(types::Err<E> err)
-          : ok_(false) {
+      Result(types::Err<E> &err) : ok_(false) {
+        storage_.construct(err);
+      }
+
+      Result(types::Err<E> &&err) : ok_(false) {
         storage_.construct(std::move(err));
       }
 
@@ -819,6 +875,7 @@ namespace fm {
 
     private:
       T expect_impl(std::true_type) const {}
+
       T expect_impl(std::false_type) const { return storage_.template get<T>(); }
 
       bool ok_;
@@ -827,8 +884,10 @@ namespace fm {
 
     template <typename T, typename E>
     bool operator==(const Result<T, E> &lhs, const Result<T, E> &rhs) {
-      static_assert(concept::EqualityComparable<T>::value, "T must be EqualityComparable for Result to be comparable");
-      static_assert(concept::EqualityComparable<E>::value, "E must be EqualityComparable for Result to be comparable");
+      static_assert(concept::EqualityComparable<T>::value,
+                    "T must be EqualityComparable for Result to be comparable");
+      static_assert(concept::EqualityComparable<E>::value,
+                    "E must be EqualityComparable for Result to be comparable");
 
       if (lhs.isOk() && rhs.isOk()) {
         return lhs.storage().template get<T>() == rhs.storage().template get<T>();
@@ -840,7 +899,8 @@ namespace fm {
 
     template <typename T, typename E>
     bool operator==(const Result<T, E> &lhs, types::Ok<T> ok) {
-      static_assert(concept::EqualityComparable<T>::value, "T must be EqualityComparable for Result to be comparable");
+      static_assert(concept::EqualityComparable<T>::value,
+                    "T must be EqualityComparable for Result to be comparable");
 
       if (!lhs.isOk())
         return false;
@@ -855,7 +915,8 @@ namespace fm {
 
     template <typename T, typename E>
     bool operator==(const Result<T, E> &lhs, types::Err<E> err) {
-      static_assert(concept::EqualityComparable<E>::value, "E must be EqualityComparable for Result to be comparable");
+      static_assert(concept::EqualityComparable<E>::value,
+                    "E must be EqualityComparable for Result to be comparable");
       if (!lhs.isErr())
         return false;
 
