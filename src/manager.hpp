@@ -16,6 +16,7 @@
 #include <libfswatch/c++/event.hpp>
 
 #include "directory.hpp"
+#include "plf_colony.h"
 #include "group_by.hpp"
 #include "utility.hpp"
 
@@ -74,7 +75,7 @@ namespace fm {
 
       mutex fs_changes_mutex;
       mutex watch_listeners_mutex;
-      list<Replica> _replicas;
+      plf::colony<Replica> _replicas;
       vector<watch_listener_t> _watch_listeners;
       vector<watch_listener_t> _off_watch_listeners;
       map<string, Directory> _directory;
@@ -93,7 +94,7 @@ namespace fm {
         });
 
         if (rep == this->_replicas.end()) {
-          auto result = this->_replicas.insert(this->_replicas.end(), replica);
+          auto result = this->_replicas.insert(std::move(replica));
           Replica &new_replica = *result;
           // Invoke the listeners
           for (auto &listener : this->_watch_listeners) {
@@ -119,7 +120,7 @@ namespace fm {
         this->_fs_change_listeners.push_back(listener);
       }
 
-      const list<Replica> &replicas() const {
+      const plf::colony<Replica> &replicas() const {
         return this->_replicas;
       }
 
