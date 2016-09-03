@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "../config.h"
-#include "blocking_queue.hpp"
 #include "debug.hpp"
 #include "directory.hpp"
 #include "fswatchmanager.hpp"
@@ -32,10 +31,9 @@ namespace fm {
   namespace land {
     class UnisonManager {
       Manager &_manager;
-      thread _io_thread;
-      blocking_queue<string> _io_commands;
       set<string> _waiting;
       mutex _waiting_mutex;
+      mutex _stdout_mutex;
 
     public:
       UnisonManager(Manager &manager);
@@ -46,7 +44,6 @@ namespace fm {
       bool is_waiting(const string &hash);
       vector<string> waiting();
       void wait(const string &hash);
-      void stop_waiting(const string &hash);
       void clear_waiting();
     };
 
@@ -177,18 +174,6 @@ namespace fm {
           this->send("CHANGES", changed);
         }
       });
-
-      /*
-         * Our standard output thread
-         */
-      this->_io_thread = thread([this]() {
-        string command;
-        while (true) {
-          command = this->_io_commands.pop();
-          std::cout << command << std::endl;
-          D(log("<<< Sent \"" + command + "\""));
-        }
-      });
     }
 
     void UnisonManager::send(const string &command, const vector<string> &args) {
@@ -207,7 +192,10 @@ namespace fm {
                                                 return arg1 + " " + arg2;
                                               });
 
-      this->_io_commands.push(command_string);
+      std::lock_guard<std::mutex> lock(this->_stdout_mutex);
+      std::cout << command_string << std::endl;
+      std::cout.flush();
+      D(log("<<< Sent \"" + command_string + "\""));
     }
     void UnisonManager::ack() {
       this->send("OK", {});
@@ -229,10 +217,6 @@ namespace fm {
     vector<string> UnisonManager::waiting() {
       lock_guard<mutex> lock(this->_waiting_mutex);
       return {this->_waiting.begin(), this->_waiting.end()};
-    }
-    void UnisonManager::stop_waiting(const string &hash) {
-      lock_guard<mutex> lock(this->_waiting_mutex);
-      this->_waiting.erase(hash);
     }
     void UnisonManager::clear_waiting() {
       lock_guard<mutex> lock(this->_waiting_mutex);
@@ -331,8 +315,6 @@ namespace fm {
           }
         } else if (command == "RESET") {
         }
-
-        // this->_io_commands.wait_until_empty();
       }
     };
   }
