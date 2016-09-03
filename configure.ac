@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([unison-fsmonitor-macos], [0.0.1], [caleb@land.fm], [unison-fsmonitor-macos])
+AC_INIT([unison-fsmonitor-macos], [0.0.2], [caleb@land.fm], [unison-fsmonitor-macos])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([dist-xz subdir-objects foreign])
 AC_CONFIG_MACRO_DIRS([m4])
