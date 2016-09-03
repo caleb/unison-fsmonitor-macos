@@ -49,6 +49,7 @@ namespace fm {
 
         // Don't watch .git and .hg folders
         this->_monitor->add_filter(this->create_filter(fsw_filter_type::filter_exclude, "\\.git"));
+        this->_monitor->add_filter(this->create_filter(fsw_filter_type::filter_exclude, "\\.DS_Store"));
         this->_monitor->add_filter(this->create_filter(fsw_filter_type::filter_exclude, "\\.hg"));
 
         this->_monitor->set_directory_only(true);
