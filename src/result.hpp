@@ -764,6 +764,29 @@ namespace fm {
           storage_.destroy(details::err_tag());
       }
 
+      result &operator=(result &&other) {
+        if (other.is_ok()) {
+          details::constructor<T, E>::move(std::move(other.storage_), storage_, details::ok_tag());
+          ok_ = true;
+        } else {
+          details::constructor<T, E>::move(std::move(other.storage_), storage_, details::err_tag());
+          ok_ = false;
+        }
+
+        return *this;
+      };
+
+      result &operator=(const result &other) {
+        if (other.is_ok()) {
+          details::constructor<T, E>::copy(other.storage_, storage_, details::ok_tag());
+          ok_ = true;
+        } else {
+          details::constructor<T, E>::copy(other.storage_, storage_, details::err_tag());
+          ok_ = false;
+        }
+        return *this;
+      };
+
       bool is_ok() const {
         return ok_;
       }

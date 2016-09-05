@@ -14,6 +14,7 @@
 #include "fswatchmanager.hpp"
 #include "glib.h"
 #include "manager.hpp"
+#include "result.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -75,12 +76,16 @@ namespace fm {
       return transformed_result;
     }
 
-    string receive() {
+    result<string> receive() {
       string input;
       std::getline(std::cin, input);
+      if (std::cin.eof()) {
+        return err(string("stdin closed"));
+      }
+
       boost::trim(input);
       D(log(">>> Received \"" + input + "\""));
-      return input;
+      return ok(input);
     }
 
     class Command {
@@ -145,12 +150,20 @@ namespace fm {
 
         this->ack();
 
+        result<string> result{ok(string(""))};
         string input;
         vector<string> command_words;
         string command;
 
         while (true) {
-          input = receive();
+          result = receive();
+
+          if (!result) {
+            // Close the input
+            break;
+          }
+
+          input = result.unwrap();
 
           command_words = process_args(input);
           command = command_words[0];
@@ -270,6 +283,7 @@ namespace fm {
 
     void UnisonManager::start() {
       string input;
+      result<string> result{ok(string(""))};
       string command;
       vector<string> command_words;
       vector<string> args;
@@ -278,7 +292,13 @@ namespace fm {
       this->send("VERSION", {"1"});
 
       while (true) {
-        input = receive();
+        result = receive();
+
+        if (!result) {
+          break;
+        }
+
+        input = result.unwrap();
 
         command_words = process_args(input);
         if (command_words.size() == 0) {
